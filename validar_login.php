@@ -6,33 +6,30 @@ session_start();
 $u = $_POST['user'];
 $p = $_POST['pass'];
 
-// 1. Buscamos el usuario en la base de datos de DBeaver
-$stmt = $conn->prepare("SELECT id, nombre, password FROM usuarios WHERE usuario = ?");
+// 1. Buscamos el usuario (Asegúrate que en la DB la columna se llame 'rol')
+$stmt = $conn->prepare("SELECT id, nombre, password, rol FROM usuarios WHERE usuario = ?");
 $stmt->bind_param("s", $u);
 $stmt->execute();
 $res = $stmt->get_result();
 
 if ($user = $res->fetch_assoc()) {
-    // 2. Comparamos la contraseña
-    // Nota: Como estamos en pruebas, usamos texto plano. 
-    // Para producción usaríamos password_verify($p, $user['password'])
+    // 2. Comparamos la contraseña (texto plano para tus pruebas en local)
     if ($p == $user['password']) {
         
-        // 3. CREAMOS LA SESIÓN (La llave maestra)
+        // 3. CREAMOS LA SESIÓN CON EL ROL
         $_SESSION['usuario_id'] = $user['id'];
         $_SESSION['nombre']     = $user['nombre'];
+        $_SESSION['rol']        = $user['rol']; // <--- ESTO ES LO QUE NECESITA EL INDEX
         
         // Redirigimos al Dashboard
         header("Location: index.php");
-        exit(); // Detenemos la ejecución aquí
+        exit();
 
     } else {
-        // Contraseña mal: Regresa al login con error
         header("Location: login.php?error=1");
         exit();
     }
 } else {
-    // Usuario no existe: Regresa al login con error
     header("Location: login.php?error=1");
     exit();
 }
