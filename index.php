@@ -99,20 +99,17 @@ $puestos_html = '
                 <small class="d-block opacity-75"><?php echo $rol; ?>,</small>
                 <span class="fw-bold"><?php echo $_SESSION['nombre']; ?></span>
             </div>
-            
             <?php if($rol == 'Director'): ?>
             <button class="btn btn-warning fw-bold shadow-sm px-4 rounded-pill me-2" data-bs-toggle="modal" data-bs-target="#modalFiltrosExcel">
                 <i class="fas fa-file-excel"></i> <span class="d-none d-sm-inline">REPORTES</span>
             </button>
             <?php endif; ?>
-
             <a href="logout.php" class="btn btn-danger fw-bold shadow-sm px-3 rounded-pill"><i class="fas fa-sign-out-alt"></i></a>
         </div>
     </div>
 </nav>
 
 <div class="container">
-    
     <?php if($rol == 'Director'): ?>
     <div class="row mb-4 g-3">
         <div class="col-md-4">
