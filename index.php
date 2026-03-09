@@ -5,9 +5,60 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// Capturamos el rol y el ID del usuario actual
 $rol = $_SESSION['rol'] ?? 'Coordinador'; 
 $mi_id = $_SESSION['usuario_id'];
+
+// Estructura de Piedecuesta para los Selects
+$sectores_piedecuesta = [
+    "Comuna 1 (Centro / Norte)" => ["Centro", "San Rafael", "La Candelaria", "Hoyo Chiquito", "El Trapiche", "La Inmaculada", "San Jorge", "El Refugio", "Junín", "Nueva Colombia"],
+    "Comuna 2 (Sur / Oriente)" => ["Bariloche", "Paseo del Puente", "San Carlos", "Cabecera del Llano", "La Rioja", "Granadillo", "El Mirador", "Villabel", "La Argentina"],
+    "Comuna 3 (Occidente)" => ["Palermo", "La Colina", "Quinta Granada", "Pinares", "Cerro de la Cantera", "Villa de San Andrés", "Campo Verde", "Portal del Valle"],
+    "Rural (Corregimientos)" => ["Menzulí Alto", "Menzulí Bajo", "Curos", "Pescadero", "Umpalá", "Sevilla", "Planadas", "La Vega", "Cristales", "Granadillo"]
+];
+
+$puestos_html = '
+    <option value="COL BALBINO GARCIA SEDE A">COL BALBINO GARCIA SEDE A</option>
+    <option value="INST LUIS CARLOS GALAN SEDE D">INST LUIS CARLOS GALAN SEDE D</option>
+    <option value="LUIS CARLOS GALAN SEDE B">LUIS CARLOS GALAN SEDE B</option>
+    <option value="ESC NORMAL SUPERIOR">ESC NORMAL SUPERIOR</option>
+    <option value="COL CABELLANO">COL CABELLANO</option>
+    <option value="COL CAVIREY">COL CAVIREY</option>
+    <option value="COL CEDECO">COL CEDECO</option>
+    <option value="INST LUIS CARLOS GALAN SEDE A">INST LUIS CARLOS GALAN SEDE A</option>
+    <option value="ESC BALBINO GARCIA SEDE C - MA">ESC BALBINO GARCIA SEDE C - MA</option>
+    <option value="COLEGIO LUIS CARLOS GALAN SEDE C">COLEGIO LUIS CARLOS GALAN SEDE C</option>
+    <option value="COL HUMBERTO GOMEZ NIGRINIS">COL HUMBERTO GOMEZ NIGRINIS</option>
+    <option value="ESCENARIO DEPORTIVO MARIE POUSSEPIN">ESCENARIO DEPORTIVO MARIE POUSSEPIN</option>
+    <option value="ESC BALBINO GARCIA SEDE B">ESC BALBINO GARCIA SEDE B</option>
+    <option value="COLEGIO CARLOS VICENTE REY SEDE D">COLEGIO CARLOS VICENTE REY SEDE D</option>
+    <option value="COLEGIO CEDECO SEDE B">COLEGIO CEDECO SEDE B</option>
+    <option value="COL VICTOR FELIX GOMEZ SEDE A">COL VICTOR FELIX GOMEZ SEDE A</option>
+    <option value="COL PROMOCION SOCIAL">COL PROMOCION SOCIAL</option>
+    <option value="COL VICTOR FELIX GOMEZ SEDE B">COL VICTOR FELIX GOMEZ SEDE B</option>
+    <option value="CAIF CAMINO A BELEN">CAIF CAMINO A BELEN</option>
+    <option value="CENTRO TABACALERO">CENTRO TABACALERO</option>
+    <option value="INST TEC CRECER Y CONSTRUIR">INST TEC CRECER Y CONSTRUIR</option>
+    <option value="CTRO INTEGRACIÓN COMUNITARIA - LA DIVA">CTRO INTEGRACIÓN COMUNITARIA - LA DIVA</option>
+    <option value="RESTAURANTE ESCOLAR TABACALERO">RESTAURANTE ESCOLAR TABACALERO</option>
+    <option value="SALON COMUNAL BARILOCHE">SALON COMUNAL BARILOCHE</option>
+    <option value="BUENOS AIRES">BUENOS AIRES</option>
+    <option value="CUROS">CUROS</option>
+    <option value="CRISTALES">CRISTALES</option>
+    <option value="GRANADILLO">GRANADILLO</option>
+    <option value="LA ESPERANZA">LA ESPERANZA</option>
+    <option value="LA COLINA">LA COLINA</option>
+    <option value="SAN FRANCISCO">SAN FRANCISCO</option>
+    <option value="SAN ISIDRO">SAN ISIDRO</option>
+    <option value="MESITAS DE SAN JAVIER">MESITAS DE SAN JAVIER</option>
+    <option value="MANZANARES">MANZANARES</option>
+    <option value="MIRAFLORES">MIRAFLORES</option>
+    <option value="MENZULI ALTO Y MENZULI BAJO">MENZULI ALTO Y MENZULI BAJO</option>
+    <option value="PESCADERO">PESCADERO</option>
+    <option value="PLANADAS">PLANADAS</option>
+    <option value="SEVILLA">SEVILLA</option>
+    <option value="SANTA RITA">SANTA RITA</option>
+    <option value="UMPALA">UMPALA</option>
+    <option value="LA VEGA">LA VEGA</option>';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -30,7 +81,6 @@ $mi_id = $_SESSION['usuario_id'];
         .search-input { padding-left: 45px !important; height: 55px; border-radius: 30px !important; }
         .capitan-box { background: #f0f2ff; border: 1px dashed var(--primary); border-radius: 12px; padding: 15px; }
         .sticky-sidebar { position: sticky; top: 20px; }
-        /* Estilo para la tabla de mis registros */
         .table-mini { font-size: 0.85rem; }
     </style>
 </head>
@@ -98,64 +148,42 @@ $mi_id = $_SESSION['usuario_id'];
                     <form id="registroForm">
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Cédula</label>
-                            <input type="number" id="inputCedula" name="cedula" class="form-control" placeholder="Ingrese documento..." required onkeyup="validarExistencia()"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 20)">
+                            <input type="number" id="inputCedula" name="cedula" class="form-control" placeholder="Ingrese documento..." required onkeyup="validarExistencia()" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 20)">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nombre Completo</label>
                             <input type="text" name="nombre" class="form-control text-uppercase" placeholder="APELLIDOS Y NOMBRES" required>
                         </div>
+                        
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Puesto de Votación</label>
-                            <?php $puestos_html = '
-                                <option value="COL BALBINO GARCIA SEDE A">COL BALBINO GARCIA SEDE A</option>
-                                <option value="INST LUIS CARLOS GALAN SEDE D">INST LUIS CARLOS GALAN SEDE D</option>
-                                <option value="LUIS CARLOS GALAN SEDE B">LUIS CARLOS GALAN SEDE B</option>
-                                <option value="ESC NORMAL SUPERIOR">ESC NORMAL SUPERIOR</option>
-                                <option value="COL CABELLANO">COL CABELLANO</option>
-                                <option value="COL CAVIREY">COL CAVIREY</option>
-                                <option value="COL CEDECO">COL CEDECO</option>
-                                <option value="INST LUIS CARLOS GALAN SEDE A">INST LUIS CARLOS GALAN SEDE A</option>
-                                <option value="ESC BALBINO GARCIA SEDE C - MA">ESC BALBINO GARCIA SEDE C - MA</option>
-                                <option value="COLEGIO LUIS CARLOS GALAN SEDE C">COLEGIO LUIS CARLOS GALAN SEDE C</option>
-                                <option value="COL HUMBERTO GOMEZ NIGRINIS">COL HUMBERTO GOMEZ NIGRINIS</option>
-                                <option value="ESCENARIO DEPORTIVO MARIE POUSSEPIN">ESCENARIO DEPORTIVO MARIE POUSSEPIN</option>
-                                <option value="ESC BALBINO GARCIA SEDE B">ESC BALBINO GARCIA SEDE B</option>
-                                <option value="COLEGIO CARLOS VICENTE REY SEDE D">COLEGIO CARLOS VICENTE REY SEDE D</option>
-                                <option value="COLEGIO CEDECO SEDE B">COLEGIO CEDECO SEDE B</option>
-                                <option value="COL VICTOR FELIX GOMEZ SEDE A">COL VICTOR FELIX GOMEZ SEDE A</option>
-                                <option value="COL PROMOCION SOCIAL">COL PROMOCION SOCIAL</option>
-                                <option value="COL VICTOR FELIX GOMEZ SEDE B">COL VICTOR FELIX GOMEZ SEDE B</option>
-                                <option value="CAIF CAMINO A BELEN">CAIF CAMINO A BELEN</option>
-                                <option value="CENTRO TABACALERO">CENTRO TABACALERO</option>
-                                <option value="INST TEC CRECER Y CONSTRUIR">INST TEC CRECER Y CONSTRUIR</option>
-                                <option value="CTRO INTEGRACIÓN COMUNITARIA - LA DIVA">CTRO INTEGRACIÓN COMUNITARIA - LA DIVA</option>
-                                <option value="RESTAURANTE ESCOLAR TABACALERO">RESTAURANTE ESCOLAR TABACALERO</option>
-                                <option value="SALON COMUNAL BARILOCHE">SALON COMUNAL BARILOCHE</option>
-                                <option value="BUENOS AIRES">BUENOS AIRES</option>
-                                <option value="CUROS">CUROS</option>
-                                <option value="CRISTALES">CRISTALES</option>
-                                <option value="GRANADILLO">GRANADILLO</option>
-                                <option value="LA ESPERANZA">LA ESPERANZA</option>
-                                <option value="LA COLINA">LA COLINA</option>
-                                <option value="SAN FRANCISCO">SAN FRANCISCO</option>
-                                <option value="SAN ISIDRO">SAN ISIDRO</option>
-                                <option value="MESITAS DE SAN JAVIER">MESITAS DE SAN JAVIER</option>
-                                <option value="MANZANARES">MANZANARES</option>
-                                <option value="MIRAFLORES">MIRAFLORES</option>
-                                <option value="MENZULI ALTO Y MENZULI BAJO">MENZULI ALTO Y MENZULI BAJO</option>
-                                <option value="PESCADERO">PESCADERO</option>
-                                <option value="PLANADAS">PLANADAS</option>
-                                <option value="SEVILLA">SEVILLA</option>
-                                <option value="SANTA RITA">SANTA RITA</option>
-                                <option value="UMPALA">UMPALA</option>
-                                <option value="LA VEGA">LA VEGA</option>';
-                            ?>
                             <select name="lugar" class="form-select shadow-sm" required>
                                 <option value="" selected disabled>Seleccione puesto...</option>
                                 <?php echo $puestos_html; ?>
                             </select>
                         </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small">Barrio o Vereda</label>
+                                <select name="barrio_vereda" id="selectBarrio" class="form-select shadow-sm" required>
+                                    <option value="" selected disabled>Seleccione sector...</option>
+                                    <?php foreach ($sectores_piedecuesta as $zona => $barrios): ?>
+                                        <optgroup label="<?php echo $zona; ?>">
+                                            <?php foreach ($barrios as $barrio): ?>
+                                                <option value="<?php echo $barrio; ?>" data-zona="<?php echo $zona; ?>"><?php echo $barrio; ?></option>
+                                            <?php endforeach; ?>
+                                        </optgroup>
+                                    <?php endforeach; ?>
+                                </select>
+                                <input type="hidden" name="comuna_corregimiento" id="inputComuna">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small">Dirección de Residencia</label>
+                                <input type="text" name="direccion_residencia" class="form-control shadow-sm text-uppercase" placeholder="Calle/Carrera # Casa - Barrio">
+                            </div>
+                        </div>
+
                         <div class="capitan-box mb-4">
                             <div class="form-check form-switch mb-2">
                                 <input class="form-check-input" type="checkbox" id="tieneCapitan" onchange="toggleCapitan()">
@@ -165,6 +193,7 @@ $mi_id = $_SESSION['usuario_id'];
                                 <select name="capitan_id" id="selectCapitanes" class="form-select form-select-sm border-primary"></select>
                             </div>
                         </div>
+
                         <div class="row mb-4">
                             <div class="col-6"><input type="number" name="mesa" class="form-control" placeholder="Mesa" required oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3)"></div>
                             <div class="col-6"><input type="text" name="telefono" class="form-control" placeholder="Teléfono" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"></div>
@@ -184,23 +213,24 @@ $mi_id = $_SESSION['usuario_id'];
                                     <th>NOMBRE</th>
                                     <th>PUESTO</th>
                                     <th>MESA</th>
-                                    <th>TELEEFONO</th>
+                                    <th>TELEFONO</th>
                                     <th>CAPITÁN</th>
                                 </tr>
                             </thead>
-                            <tbody id="misRegistros">
-                                </tbody>
+                            <tbody id="misRegistros"></tbody>
                         </table>
                     </div>
                 </div>
                 <?php endif; ?>
 
+                
+
                 <?php if($rol == 'Director'): ?>
-                <div class="card main-card p-4 mb-4">
+                <div class="card main-card p-4 mb-4 shadow-sm">
                     <h5 class="fw-bold mb-3"><i class="fas fa-chart-pie me-2 text-warning"></i> Resumen Puestos</h5>
                     <div id="listaEstadisticas" style="max-height: 200px; overflow-y: auto;"></div>
                 </div>
-                <div class="card main-card p-4">
+                <div class="card main-card p-4 shadow-sm">
                     <h5 class="fw-bold mb-3"><i class="fas fa-crown me-2 text-warning"></i> Top Capitanes</h5>
                     <div id="listaCapitanes" style="max-height: 200px; overflow-y: auto;"></div>
                 </div>
@@ -223,13 +253,28 @@ $mi_id = $_SESSION['usuario_id'];
                                 <th>NOMBRES</th>
                                 <th>PUESTO</th>
                                 <th>MESA</th>
-                                <th>TELEFONO</th>   
-                                <th class="text-center">GESTIÓN</th>
+                                <th>BARRIO</th>
+                                <th>GESTIÓN</th>
                             </tr>
                         </thead>
                         <tbody id="tablaVotantes"></tbody>
                     </table>
                 </div>
+
+           <?php if($rol == 'Director'): ?>
+            <div class="card main-card p-4 mt-4 mb-4 shadow-sm border-0 animate__animated animate__fadeIn">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-primary mb-0">
+                        <i class="fas fa-chart-bar me-2"></i> Fuerza Electoral por Zona
+                    </h5>
+                    <span class="badge bg-light text-primary border px-3">Actualizado en tiempo real</span>
+                </div>
+                <div style="position: relative; height:350px;">
+                    <canvas id="graficaZonas"></canvas>
+                </div>
+            </div>
+            <?php endif; ?>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             </div>
         </div>
         <?php endif; ?>
@@ -259,14 +304,23 @@ $mi_id = $_SESSION['usuario_id'];
                         </select>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label fw-bold small">Comuna / Sector</label>
+                        <select name="comuna" class="form-select border-primary">
+                            <option value="">-- Todas las Comunas --</option>
+                            <?php foreach($sectores_piedecuesta as $comuna => $barrios): ?>
+                                <option value="<?php echo $comuna; ?>"><?php echo $comuna; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label fw-bold small">Mesa (Opcional)</label>
-                        <input type="number" name="mesa" class="form-control" placeholder="Número de mesa">
+                        <input type="number" name="mesa" class="form-control border-primary" placeholder="Número de mesa">
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-success fw-bold rounded-pill shadow px-4">
-                        <i class="fas fa-download me-2"></i>DESCARGAR EXCEL
+                        <i class="fas fa-download me-2"></i> DESCARGAR EXCEL
                     </button>
                 </div>
             </form>
@@ -290,9 +344,23 @@ $mi_id = $_SESSION['usuario_id'];
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Puesto de Votación</label>
-                        <select name="lugar" id="edit_lugar" class="form-select" required>
-                            <?php echo $puestos_html; ?>
+                        <select name="lugar" id="edit_lugar" class="form-select" required><?php echo $puestos_html; ?></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Barrio / Vereda</label>
+                        <select name="barrio_vereda" id="edit_barrio" class="form-select">
+                            <?php foreach ($sectores_piedecuesta as $zona => $barrios): ?>
+                                <optgroup label="<?php echo $zona; ?>">
+                                    <?php foreach ($barrios as $barrio): ?>
+                                        <option value="<?php echo $barrio; ?>"><?php echo $barrio; ?></option>
+                                    <?php endforeach; ?>
+                                </optgroup>
+                            <?php endforeach; ?>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Dirección</label>
+                        <input type="text" name="direccion_residencia" id="edit_direccion" class="form-control text-uppercase">
                     </div>
                     <div class="row">
                         <div class="col-6 mb-3">
@@ -317,6 +385,26 @@ $mi_id = $_SESSION['usuario_id'];
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Asignar Comuna Automáticamente
+    const selectBarrio = document.getElementById('selectBarrio');
+    if(selectBarrio){
+        selectBarrio.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const zona = selectedOption.getAttribute('data-zona');
+            const inputC = document.getElementById('inputComuna');
+            if(inputC) inputC.value = zona;
+        });
+    }
+
+    // Modal Excel Capitanes
+    document.getElementById('modalFiltrosExcel').addEventListener('show.bs.modal', function () {
+        fetch('obtener_capitanes.php')
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById('filtroCapitanExcel').innerHTML = '<option value="">-- Todos los Capitanes --</option>' + html;
+            });
+    });
+
     function cargarDatos() {
         <?php if($rol == 'Director'): ?>
             fetch('listar.php').then(r => r.text()).then(d => {
@@ -326,18 +414,11 @@ $mi_id = $_SESSION['usuario_id'];
             fetch('estadisticas.php').then(r => r.text()).then(d => { document.getElementById('listaEstadisticas').innerHTML = d; });
             fetch('dashboard_capitanes.php').then(r => r.text()).then(d => { document.getElementById('listaCapitanes').innerHTML = d; });
         <?php else: ?>
-            // Carga solo los registros del brigadista logueado
             fetch('mis_registros.php').then(r => r.text()).then(d => {
                 document.getElementById('misRegistros').innerHTML = d;
             });
         <?php endif; ?>
     }
-
-    document.getElementById('modalFiltrosExcel').addEventListener('show.bs.modal', function () {
-        fetch('obtener_capitanes.php').then(r => r.text()).then(html => {
-            document.getElementById('filtroCapitanExcel').innerHTML = '<option value="">-- Todos los Capitanes --</option>' + html;
-        });
-    });
 
     function toggleCapitan() {
         const div = document.getElementById('divCapitan');
@@ -345,7 +426,9 @@ $mi_id = $_SESSION['usuario_id'];
         const select = document.getElementById('selectCapitanes');
         if(check.checked) {
             div.style.display = 'block';
-            fetch('obtener_capitanes.php').then(r => r.text()).then(html => { select.innerHTML = html; });
+            fetch('obtener_capitanes.php').then(r => r.text()).then(html => { 
+                select.innerHTML = '<option value="" selected disabled>Seleccione Capitán...</option>' + html; 
+            });
         } else {
             div.style.display = 'none';
             select.value = "";
@@ -353,11 +436,13 @@ $mi_id = $_SESSION['usuario_id'];
     }
 
     function actualizarContadoresHeader() {
-        let filas = document.querySelectorAll("#tablaVotantes tr");
-        if(document.getElementById("totalGeneral")) {
+        const totalGen = document.getElementById("totalGeneral");
+        if(totalGen) {
+            let filas = document.querySelectorAll("#tablaVotantes tr");
             let total = (filas.length > 0 && !filas[0].innerText.includes("No hay")) ? filas.length : 0;
-            document.getElementById("totalGeneral").innerText = total;
-            document.getElementById("ultimoNombre").innerText = total > 0 ? filas[0].cells[1].innerText.split('\n')[0] : "Sin registros.";
+            totalGen.innerText = total;
+            const ultimoNom = document.getElementById("ultimoNombre");
+            if(ultimoNom) ultimoNom.innerText = total > 0 ? filas[0].cells[1].innerText.split('\n')[0] : "Sin registros.";
         }
     }
 
@@ -370,21 +455,18 @@ $mi_id = $_SESSION['usuario_id'];
 
     function validarExistencia() {
         let cedula = document.getElementById('inputCedula').value.trim();
+        if(cedula === "") return;
         let existe = false;
-        // Solo si la tabla existe (Director) comprobamos localmente, si no, se valida al guardar
         let celdasCedula = document.querySelectorAll("#tablaVotantes tr td:first-child");
+        celdasCedula.forEach(td => { if(td.innerText.trim() === cedula) existe = true; });
         
-        if(celdasCedula.length > 0) {
-            celdasCedula.forEach(td => { if(td.innerText.trim() === cedula) existe = true; });
-        }
-
         const input = document.getElementById('inputCedula');
         const btn = document.getElementById('btnGuardar');
         if(existe) {
-            input.style.borderColor = 'red'; input.style.backgroundColor = '#fff5f5'; btn.disabled = true;
+            input.style.borderColor = 'red'; btn.disabled = true;
             Swal.fire({ icon: 'error', title: 'Cédula Duplicada', text: 'Esta persona ya está registrada.', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
         } else {
-            input.style.borderColor = ''; input.style.backgroundColor = ''; btn.disabled = false;
+            input.style.borderColor = ''; btn.disabled = false;
         }
     }
 
@@ -392,76 +474,112 @@ $mi_id = $_SESSION['usuario_id'];
         e.preventDefault();
         const btn = document.getElementById('btnGuardar');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...'; btn.disabled = true;
-        fetch('registrar.php', { method: 'POST', body: new FormData(this) }).then(res => res.text()).then(msg => {
-            btn.innerHTML = 'GUARDAR REGISTRO <i class="fas fa-save ms-2"></i>'; btn.disabled = false;
-            if(msg.trim() == 'success') {
-                Swal.fire({ icon: 'success', title: '¡Exitoso!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-                this.reset(); document.getElementById('tieneCapitan').checked = false; toggleCapitan(); cargarDatos();
+        fetch('registrar.php', { method: 'POST', body: new FormData(this) })
+            .then(res => res.text())
+            .then(msg => {
+                btn.innerHTML = 'GUARDAR REGISTRO <i class="fas fa-save ms-2"></i>'; btn.disabled = false;
+                if(msg.trim() == 'success') {
+                    Swal.fire({ icon: 'success', title: '¡Exitoso!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                    this.reset(); 
+                    const tieneCap = document.getElementById('tieneCapitan');
+                    if(tieneCap) { tieneCap.checked = false; toggleCapitan(); }
+                    cargarDatos();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: msg });
+                }
+            });
+    }
+
+    function borrar(id) {
+        Swal.fire({ title: '¿Borrar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sí, borrar' }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('borrar.php?id=' + id).then(r => r.text()).then(data => {
+                    if (data.trim() === "success") {
+                        Swal.fire('¡Borrado!', '', 'success'); cargarDatos();
+                    } else {
+                        Swal.fire('Error', data, 'error');
+                    }
+                });
             }
         });
     }
 
-    function borrar(id) {
-    Swal.fire({
-        title: '¿Borrar?',
-        text: "No se puede deshacer",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Sí, borrar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Enviamos la petición al servidor
-            fetch('borrar.php?id=' + id)
-                .then(response => response.text()) // Convertimos la respuesta a texto
-                .then(data => {
-                    const respuesta = data.trim(); // Limpiamos espacios en blanco
-
-                    if (respuesta === "success") {
-                        Swal.fire('¡Borrado!', 'El registro ha sido eliminado.', 'success');
-                        cargarDatos(); // Recargamos la tabla
-                    } 
-                    else if (respuesta === "es_capitan") {
-                        // AQUÍ capturamos el mensaje que configuramos en PHP
-                        Swal.fire('No se puede borrar', 'Esta persona es Capitán y tiene referidos a su cargo.', 'error');
-                    } 
-                    else {
-                        Swal.fire('Error', 'No se pudo eliminar el registro.', 'error');
-                    }
-                });
-        }
-    });
-}
-
-    function prepararEditar(id, nombre, lugar, mesa, telefono) {
+    function prepararEditar(id, nombre, lugar, mesa, telefono, barrio, direccion) {
+        const modalE = document.getElementById('modalEditar');
+        if(!modalE) return;
         document.getElementById('edit_id').value = id;
         document.getElementById('edit_nombre').value = nombre;
         document.getElementById('edit_lugar').value = lugar;
         document.getElementById('edit_mesa').value = mesa;
         document.getElementById('edit_telefono').value = telefono;
-        
-        var modal = new bootstrap.Modal(document.getElementById('modalEditar'));
-        modal.show();
+        document.getElementById('edit_barrio').value = barrio;
+        document.getElementById('edit_direccion').value = direccion;
+        new bootstrap.Modal(modalE).show();
     }
 
     document.getElementById('editForm').onsubmit = function(e) {
         e.preventDefault();
-        const btn = this.querySelector('button[type="submit"]');
-        btn.disabled = true; btn.innerHTML = 'GUARDANDO...';
-
         fetch('actualizar.php', { method: 'POST', body: new FormData(this) })
-        .then(res => res.text())
-        .then(msg => {
-            btn.disabled = false; btn.innerHTML = 'GUARDAR CAMBIOS';
-            if(msg.trim() === 'success') {
-                bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-                Swal.fire({ icon: 'success', title: '¡Actualizado!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-                cargarDatos();
-            } else {
-                Swal.fire('Error', 'No se pudo actualizar.', 'error');
-            }
-        });
+            .then(res => res.text())
+            .then(msg => {
+                if(msg.trim() === 'success') {
+                    const modalInst = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
+                    if(modalInst) modalInst.hide();
+                    Swal.fire({ icon: 'success', title: '¡Actualizado!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                    cargarDatos();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: msg });
+                }
+            });
     }
+
+    function cargarGraficaBarras() {
+        const ctx = document.getElementById('graficaZonas');
+        if(!ctx) return;
+
+        fetch('datos_grafica.php')
+            .then(r => r.json())
+            .then(data => {
+                new Chart(ctx, {
+                    type: 'bar', // Tipo barra
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Simpatizantes',
+                            data: data.counts,
+                            backgroundColor: '#1a237e', // Tu azul primario
+                            hoverBackgroundColor: '#ffd600', // Amarillo al pasar el mouse
+                            borderRadius: 10,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false } // Ocultamos leyenda para que sea más limpio
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { display: false },
+                                ticks: { font: { weight: 'bold' } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 11 } }
+                            }
+                        }
+                    }
+                });
+            });
+    }
+
+    // Ejecutar al cargar
+    <?php if($rol == 'Director'): ?>
+        window.addEventListener('load', cargarGraficaBarras);
+    <?php endif; ?>
+
     window.onload = cargarDatos;
 </script>
 </body>

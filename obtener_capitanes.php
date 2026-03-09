@@ -1,11 +1,16 @@
 <?php
 include 'conexion.php';
 
-// Traemos solo ID y Nombre de todos para que sirvan como capitanes
+// Consulta limpia para traer a todos
 $res = $conn->query("SELECT id, nombre FROM simpatizantes ORDER BY nombre ASC");
 
-echo "<option value=''>-- Sin Capitán (Es Líder Independiente) --</option>";
-while($row = $res->fetch_assoc()) {
-    echo "<option value='{$row['id']}'>{$row['nombre']}</option>";
+if($res->num_rows > 0) {
+    while($row = $res->fetch_assoc()) {
+        // htmlspecialchars evita que nombres con tildes o comillas dañen el HTML
+        $nombre = htmlspecialchars($row['nombre']);
+        echo "<option value='{$row['id']}'>{$nombre}</option>";
+    }
+} else {
+    echo "<option disabled>No hay registros aún</option>";
 }
 ?>

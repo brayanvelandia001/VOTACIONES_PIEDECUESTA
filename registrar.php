@@ -1,31 +1,42 @@
 <?php
-// 1. Iniciamos sesión para poder leer quién está logueado
-session_start();
+session_start(); // Importante para saber quién registra
 include 'conexion.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 1. Capturamos los datos que ya tenías
     $cedula  = $_POST['cedula'];
     $nombre  = strtoupper($_POST['nombre']);
     $lugar   = $_POST['lugar'];
     $mesa    = $_POST['mesa'];
     $tel     = $_POST['telefono'];
     
-    // Capturamos el ID del usuario desde la sesión
-    $registrado_por = $_SESSION['usuario_id']; 
-
-    // Si eligen capitán (referido), se guarda su ID, si no, NULL
+    // 2. AGREGAMOS LOS DOS CAMPOS NUEVOS
+    $barrio    = $_POST['barrio_vereda'] ?? '';
+    $direccion = strtoupper($_POST['direccion_residencia'] ?? '');
+    
+    // 3. Datos de control
+    $registrado_por = $_SESSION['usuario_id'] ?? null; 
     $capitan = !empty($_POST['capitan_id']) ? $_POST['capitan_id'] : null;
 
-    // 2. Agregamos 'registrado_por' a la lista de columnas y un '?' más a los VALUES
-    $stmt = $conn->prepare("INSERT INTO simpatizantes (cedula, nombre, lugar_votacion, mesa, telefono, capitan_id, registrado_por) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    // 4. Preparamos el SQL con las nuevas columnas (Asegúrate que se llamen así en tu DB)
+    // Agregamos: barrio_vereda, direccion_residencia y registrado_por
+    $sql = "INSERT INTO simpatizantes 
+            (cedula, nombre, lugar_votacion, barrio_vereda, direccion_residencia, mesa, telefono, capitan_id, registrado_por) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = $conn->prepare($sql);
     
-    // 3. Ajustamos los tipos en bind_param ("sssiisi" -> agregamos una 'i' al final para el ID del usuario)
-    $stmt->bind_param("sssiisi", $cedula, $nombre, $lugar, $mesa, $tel, $capitan, $registrado_por);
+
+    $stmt->bind_param("sssssissi", $cedula, $nombre, $lugar, $barrio, $direccion, $mesa, $tel, $capitan, $registrado_por);
     
     if ($stmt->execute()) {
         echo "success";
     } else {
-        echo "error";
+        // Si falla, esto te dirá por qué (ej: columna mal escrita)
+        echo "error: " . $conn->error;
     }
+    
+    $stmt->close();
 }
+$conn->close();
 ?>
